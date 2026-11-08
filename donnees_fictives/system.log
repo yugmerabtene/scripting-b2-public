@@ -1,0 +1,23 @@
+2026-11-08 08:15:23 INFO sshd[1234] Accepted publickey for admin from 192.168.1.10 port 54322 ssh2
+2026-11-08 08:15:45 INFO sshd[1235] pam_unix(sshd:session): session opened for user admin by (uid=0)
+2026-11-08 09:02:11 WARN sshd[1240] Failed password for invalid user test from 10.0.0.5 port 49152 ssh2
+2026-11-08 09:02:13 WARN sshd[1240] Failed password for invalid user test from 10.0.0.5 port 49153 ssh2
+2026-11-08 09:02:15 WARN sshd[1240] Failed password for invalid user test from 10.0.0.5 port 49154 ssh2
+2026-11-08 09:03:00 INFO sshd[1241] Accepted password for deploy from 192.168.1.50 port 55100 ssh2
+2026-11-08 10:10:05 ERROR httpd[2340] AH00161: server reached MaxRequestWorkers setting, consider raising the limit
+2026-11-08 10:10:06 ERROR httpd[2341] AH00161: server reached MaxRequestWorkers setting, consider raising the limit
+2026-11-08 10:15:30 INFO crond[3101] (root) CMD (run-parts /etc/cron.hourly)
+2026-11-08 11:00:00 INFO systemd[1] Started Session 42 of user admin.
+2026-11-08 11:05:12 WARN kernel[401] eth0: link is not ready
+2026-11-08 11:05:15 INFO kernel[401] eth0: link becomes ready
+2026-11-08 12:00:00 INFO crond[3102] (root) CMD (run-parts /etc/cron.daily)
+2026-11-08 13:30:45 ERROR mysql[5678] Access denied for user 'backup'@'localhost' (using password: YES)
+2026-11-08 13:30:46 ERROR mysql[5679] Access denied for user 'backup'@'localhost' (using password: YES)
+2026-11-08 14:00:00 INFO backup.sh[7890] Sauvegarde quotidienne terminee avec succes
+2026-11-08 14:00:01 INFO backup.sh[7890] Taille de l'archive : 2.4 Go
+2026-11-08 15:00:00 WARN diskmon[8901] /dev/sda1 usage at 85%
+2026-11-08 15:30:00 WARN diskmon[8901] /dev/sda1 usage at 88%
+2026-11-08 16:00:00 ERROR diskmon[8901] /dev/sda1 usage at 92% - critical threshold reached
+2026-11-08 16:30:00 INFO sshd[1250] Accepted publickey for root from 192.168.1.100 port 60001 ssh2
+2026-11-08 17:00:00 INFO systemd[1] Stopping The Apache HTTP Server.
+2026-11-08 17:00:01 INFO systemd[1] Stopped The Apache HTTP Server.

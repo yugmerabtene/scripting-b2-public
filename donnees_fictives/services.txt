@@ -1,0 +1,10 @@
+/etc/ssh/sshd_config
+/etc/httpd/httpd.conf
+/etc/mysql/my.cnf
+/etc/crontab
+/etc/fstab
+/etc/passwd
+/etc/group
+/etc/hosts
+/etc/resolv.conf
+/etc/hostname
