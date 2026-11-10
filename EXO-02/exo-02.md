@@ -17,7 +17,7 @@ Aucune journalisation externe ni tâche planifiée ne sont requises.
 | 1 | Archive du dossier `data` | Compression en `.tar.gz` avec nom horodaté `sauvegarde_data_AAAA-MM-JJ_HH-MM.tar.gz` | 1 |
 | 2 | Gestion des erreurs | Vérification que le dossier `data` existe avant archivage ; arrêt avec code d'erreur sinon | 1 |
 | 3 | Restauration interactive | Saisie du chemin de l'archive et du dossier cible ; vérification que l'archive existe | 1 |
-| 4 | Gestion du dossier cible | Création automatique si absent ; écrasement direct du contenu existant s'il est présent (sans confirmation) | 1 |
+| 4 | Portabilité du script | Utilisation de chemins absolus ou bien définis ; le script s'exécute correctement quel que soit le répertoire courant. | 1 |
 | 5 | Rapport de fin | Message clair indiquant succès ou échec détaillé de l'opération | 1 |
 
 ---
@@ -35,7 +35,7 @@ Aucune journalisation externe ni tâche planifiée ne sont requises.
   2. le dossier cible de restauration.
 - Le script vérifie que l'archive existe physiquement.
 - Si le dossier cible est absent, il est créé automatiquement.
-- S'il contient déjà des données, son contenu est écrasé directement par l'extraction.
+- Le dossier cible est créé automatiquement s'il est absent ; son contenu est écrasé directement par l'extraction (sans confirmation).
 
 ### Rapport de fin
 À la fin de chaque opération, le script affiche clairement :
