@@ -1,4 +1,4 @@
-# 🖥️ Scripting Bash & PowerShell — Cours public pour étudiants
+# 🖥️ Scripting Bash & PowerShell
 
 > Formation complète de 4 jours + module complémentaire (Python & Cryptographie) destinée à l'administration système Linux/Windows.
 
