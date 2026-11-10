@@ -1,109 +1,151 @@
 #!/bin/bash
 ###############################################################################
 # data_backup.sh — Sauvegarde et restauration simple du dossier "data"
-# EXO-02 : un seul script, pas de log, pas de cron, noté sur 5
+#
+# EXO-02 : un seul script Bash, pas de journalisation externe, pas de cron.
+# Noté sur 5 points :
+#   1. Archivage .tar.gz horodaté du dossier data
+#   2. Gestion des erreurs (dossier manquant, archive introuvable)
+#   3. Restauration interactive (choix de l'archive et du dossier cible)
+#   4. Integrite de l'archive (controle tar -tzf avant et apres operation)
+#   5. Rapport de fin (message clair succes ou echec detaille)
+#
+# Usage :
+#   ./data_backup.sh save      # archive le dossier ./data
+#   ./data_backup.sh restore   # restaure une archive de maniere interactive
 ###############################################################################
 
-# --- Configuration : dossier spécifique à sauvegarder ---
+# =============================================================================
+# CONFIGURATION — chemins fixes (a adapter selon votre environnement)
+# =============================================================================
+
+# Dossier specifique a sauvegarder (chemin relatif ou absolu)
 DOSSIER_DATA="./data"
+
+# Repertoire ou sont stockees les archives creees
 REPERTOIRE_ARCHIVES="./archives"
 
-# --- Création du répertoire d'archives si nécessaire ---
-mkdir -p "$REPERTOIRE_ARCHIVES"
+# =============================================================================
+# FONCTIONS UTILITAIRES
+# =============================================================================
 
-mode="$1"
+# Affiche un message de succes sur la sortie standard
+afficher_succes() {
+    echo "Succès : $1"
+}
 
-###############################################################################
-# MODE SAUVEGARDE : archive le dossier "data"
-###############################################################################
-save() {
-    # Vérification de l'existence du dossier data
+# Affiche un message d'erreur sur la sortie d'erreur et arrete le script
+afficher_erreur_et_sortir() {
+    echo "Échec : $1" >&2
+    exit 1
+}
+
+# Verifie l'integrite d'une archive .tar.gz (liste son contenu sans l'extraire)
+# Retourne 0 si l'archive est valide, 1 sinon
+verifier_integrite_archive() {
+    local archive="$1"
+    tar -tzf "$archive" >/dev/null 2>&1
+}
+
+# =============================================================================
+# MODE SAUVEGARDE — archive le dossier "data"
+# =============================================================================
+
+mode_save() {
+    echo "[Sauvegarde] Demarrage de l'archivage du dossier '$DOSSIER_DATA'..."
+
+    # 1. Verifier que le dossier source existe
     if [ ! -d "$DOSSIER_DATA" ]; then
-        echo "ERREUR : Le dossier '$DOSSIER_DATA' est introuvable." >&2
-        echo "Échec : dossier source absent." >&2
-        exit 1
+        afficher_erreur_et_sortir "Le dossier '$DOSSIER_DATA' est introuvable."
     fi
 
-    # Nom de l'archive horodaté
-    NOM_ARCHIVE="sauvegarde_data_$(date '+%Y-%m-%d_%H-%M').tar.gz"
-    CHEMIN_ARCHIVE="$REPERTOIRE_ARCHIVES/$NOM_ARCHIVE"
+    # 2. Creer le repertoire de stockage s'il n'existe pas
+    mkdir -p "$REPERTOIRE_ARCHIVES" 2>/dev/null || \
+        afficher_erreur_et_sortir "Impossible de creer le repertoire '$REPERTOIRE_ARCHIVES'."
 
-    # Compression
-    tar -czf "$CHEMIN_ARCHIVE" -C "$(dirname "$DOSSIER_DATA")" "$(basename "$DOSSIER_DATA")"
-    CODE=$?
+    # 3. Construire le nom de l'archive avec horodatage (AAAA-MM-JJ_HH-MM)
+    local nom_archive
+    nom_archive="sauvegarde_data_$(date '+%Y-%m-%d_%H-%M').tar.gz"
+    local chemin_archive="$REPERTOIRE_ARCHIVES/$nom_archive"
 
-    if [ $CODE -eq 0 ]; then
-        # Vérification de l'intégrité de l'archive créée
-        tar -tzf "$CHEMIN_ARCHIVE" >/dev/null 2>&1
-        if [ $? -ne 0 ]; then
-            echo "Échec : l'archive créée est corrompue ou illisible." >&2
-            exit 1
-        fi
-        echo "Succès : archive créée -> $CHEMIN_ARCHIVE"
-        exit 0
-    else
-        echo "Échec : impossible de créer l'archive (code $CODE)." >&2
-        exit 1
+    # 4. Creer l'archive compressee
+    tar -czf "$chemin_archive" \
+        -C "$(dirname "$DOSSIER_DATA")" \
+        "$(basename "$DOSSIER_DATA")"
+
+    local code_retour=$?
+
+    # 5. Verifier que la creation a reussi
+    if [ $code_retour -ne 0 ]; then
+        afficher_erreur_et_sortir "Impossible de creer l'archive (code $code_retour)."
     fi
+
+    # 6. Verifier l'integrite de l'archive juste creee
+    if ! verifier_integrite_archive "$chemin_archive"; then
+        afficher_erreur_et_sortir "L'archive creee est corrompue ou illisible."
+    fi
+
+    afficher_succes "archive creee -> $chemin_archive"
+    exit 0
 }
 
-###############################################################################
-# MODE RESTAURATION : restaure une archive de manière interactive
-###############################################################################
-restore() {
-    # Saisie du chemin de l'archive
-    read -p "Chemin de l'archive à restaurer : " ARCHIVE_SOURCE
+# =============================================================================
+# MODE RESTAURATION — restaure une archive de maniere interactive
+# =============================================================================
 
-    # Vérification de la présence du fichier archive
-    if [ ! -f "$ARCHIVE_SOURCE" ]; then
-        echo "Échec : l'archive '$ARCHIVE_SOURCE' est introuvable." >&2
-        exit 1
+mode_restore() {
+    echo "[Restauration] Demarrage de la restauration interactive..."
+
+    # 1. Demander le chemin de l'archive a restaurer
+    local archive_source
+    read -p "Chemin de l'archive a restaurer : " archive_source
+
+    # 2. Verifier que l'archive existe physiquement
+    if [ ! -f "$archive_source" ]; then
+        afficher_erreur_et_sortir "L'archive '$archive_source' est introuvable."
     fi
 
-    # Saisie du dossier cible
-    read -p "Dossier cible de restauration : " DOSSIER_CIBLE
-
-    # Gestion du dossier cible : création automatique si absent, écrasement direct sinon
-    mkdir -p "$DOSSIER_CIBLE" 2>/dev/null
-    if [ $? -ne 0 ]; then
-        echo "Échec : impossible de créer le dossier '$DOSSIER_CIBLE'." >&2
-        exit 1
+    # 3. Verifier l'integrite de l'archive avant extraction
+    if ! verifier_integrite_archive "$archive_source"; then
+        afficher_erreur_et_sortir "L'archive '$archive_source' est corrompue ou illisible."
     fi
 
-    # Vérification de l'intégrité de l'archive avant extraction
-    tar -tzf "$ARCHIVE_SOURCE" >/dev/null 2>&1
-    if [ $? -ne 0 ]; then
-        echo "Échec : l'archive '$ARCHIVE_SOURCE' est corrompue ou illisible." >&2
-        exit 1
+    # 4. Demander le dossier cible de restauration
+    local dossier_cible
+    read -p "Dossier cible de restauration : " dossier_cible
+
+    # 5. Creer le dossier cible automatiquement s'il est absent
+    mkdir -p "$dossier_cible" 2>/dev/null || \
+        afficher_erreur_et_sortir "Impossible de creer le dossier '$dossier_cible'."
+
+    # 6. Extraire l'archive dans le dossier cible
+    tar -xzf "$archive_source" -C "$dossier_cible"
+    local code_retour=$?
+
+    # 7. Verifier que l'extraction a reussi
+    if [ $code_retour -ne 0 ]; then
+        afficher_erreur_et_sortir "Extraction de l'archive echequee (code $code_retour)."
     fi
 
-    # Extraction
-    tar -xzf "$ARCHIVE_SOURCE" -C "$DOSSIER_CIBLE"
-    CODE=$?
-
-    if [ $CODE -eq 0 ]; then
-        echo "Succès : restauration terminée dans -> $DOSSIER_CIBLE"
-        exit 0
-    else
-        echo "Échec : extraction de l'archive échouée (code $CODE)." >&2
-        exit 1
-    fi
+    afficher_succes "restauration terminee dans -> $dossier_cible"
+    exit 0
 }
 
-###############################################################################
-# Point d'entrée
-###############################################################################
-case "$mode" in
+# =============================================================================
+# POINT D'ENTREE
+# =============================================================================
+
+case "$1" in
     save)
-        save
+        mode_save
         ;;
     restore)
-        restore
+        mode_restore
         ;;
     *)
         echo "Usage : $0 {save|restore}" >&2
-        echo "  save    : archive le dossier 'data'"
-        echo "  restore : restaure une archive de manière interactive" >&2
+        echo "  save    : archive le dossier '$DOSSIER_DATA'" >&2
+        echo "  restore : restaure une archive de maniere interactive" >&2
         exit 1
         ;;
 esac
