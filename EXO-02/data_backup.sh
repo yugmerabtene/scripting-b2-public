@@ -57,23 +57,11 @@ restore() {
     # Saisie du dossier cible
     read -p "Dossier cible de restauration : " DOSSIER_CIBLE
 
-    # Gestion du dossier cible
-    if [ -e "$DOSSIER_CIBLE" ]; then
-        if [ -d "$DOSSIER_CIBLE" ] && [ "$(ls -A "$DOSSIER_CIBLE" 2>/dev/null)" ]; then
-            echo "ATTENTION : le dossier '$DOSSIER_CIBLE' contient déjà des données."
-            read -p "Continuer et écraser ? (o/n) : " REPONSE
-            if [ "$REPONSE" != "o" ] && [ "$REPONSE" != "O" ]; then
-                echo "Restauration annulée par l'utilisateur."
-                exit 1
-            fi
-        fi
-    else
-        # Création automatique du dossier cible
-        mkdir -p "$DOSSIER_CIBLE" 2>/dev/null
-        if [ $? -ne 0 ]; then
-            echo "Échec : impossible de créer le dossier '$DOSSIER_CIBLE'." >&2
-            exit 1
-        fi
+    # Gestion du dossier cible : création automatique si absent, écrasement direct sinon
+    mkdir -p "$DOSSIER_CIBLE" 2>/dev/null
+    if [ $? -ne 0 ]; then
+        echo "Échec : impossible de créer le dossier '$DOSSIER_CIBLE'." >&2
+        exit 1
     fi
 
     # Extraction
