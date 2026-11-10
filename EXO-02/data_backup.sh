@@ -33,6 +33,12 @@ save() {
     CODE=$?
 
     if [ $CODE -eq 0 ]; then
+        # Vérification de l'intégrité de l'archive créée
+        tar -tzf "$CHEMIN_ARCHIVE" >/dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo "Échec : l'archive créée est corrompue ou illisible." >&2
+            exit 1
+        fi
         echo "Succès : archive créée -> $CHEMIN_ARCHIVE"
         exit 0
     else
@@ -61,6 +67,13 @@ restore() {
     mkdir -p "$DOSSIER_CIBLE" 2>/dev/null
     if [ $? -ne 0 ]; then
         echo "Échec : impossible de créer le dossier '$DOSSIER_CIBLE'." >&2
+        exit 1
+    fi
+
+    # Vérification de l'intégrité de l'archive avant extraction
+    tar -tzf "$ARCHIVE_SOURCE" >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Échec : l'archive '$ARCHIVE_SOURCE' est corrompue ou illisible." >&2
         exit 1
     fi
 

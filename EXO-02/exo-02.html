@@ -41,7 +41,7 @@
     <tr><td>1</td><td>Archive du dossier <code>data</code></td><td>Compression en <code>.tar.gz</code> avec nom horodaté <code>sauvegarde_data_AAAA-MM-JJ_HH-MM.tar.gz</code>.</td><td><span class="badge">1 pt</span></td></tr>
     <tr><td>2</td><td>Gestion des erreurs</td><td>Vérification que le dossier <code>data</code> existe avant archivage ; arrêt avec code d'erreur sinon.</td><td><span class="badge">1 pt</span></td></tr>
     <tr><td>3</td><td>Restauration interactive</td><td>Saisie du chemin de l'archive et du dossier cible ; vérification que l'archive existe.</td><td><span class="badge">1 pt</span></td></tr>
-    <tr><td>4</td><td>Portabilité du script</td><td>Utilisation de chemins absolus ou bien définis ; le script s'exécute correctement quel que soit le répertoire courant.</td><td><span class="badge">1 pt</span></td></tr>
+    <tr><td>4</td><td>Intégrité de l'archive</td><td>Contrôle que l'archive <code>.tar.gz</code> est valide et lisible (avant extraction et après création).</td><td><span class="badge">1 pt</span></td></tr>
     <tr><td>5</td><td>Rapport de fin</td><td>Message clair indiquant succès ou échec détaillé de l'opération.</td><td><span class="badge">1 pt</span></td></tr>
   </tbody>
 </table>
@@ -64,6 +64,7 @@
   <li>Le script vérifie que l'archive existe physiquement.</li>
   <li>Si le dossier cible est absent, il est créé automatiquement.</li>
   <li>Le dossier cible est créé automatiquement s'il est absent ; son contenu est écrasé directement par l'extraction (sans confirmation).</li>
+  <li>L'intégrité de l'archive est vérifiée : contrôle que le fichier <code>.tar.gz</code> est lisible avant extraction et après création.</li>
 </ul>
 <h3>Rapport de fin</h3>
 <p>À la fin de chaque opération, le script affiche clairement :</p>
