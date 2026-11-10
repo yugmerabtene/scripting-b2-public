@@ -1,13 +1,12 @@
-# EXO-02 — Système de Sauvegarde et de Restauration
+# EXO-02 — Sauvegarde et Restauration du dossier `data`
 
 ## 1. Présentation
 
-Ce projet consiste à concevoir une solution fiable de gestion des données destinée à des étudiants. Elle repose sur deux processus distincts :
+Ce projet consiste à écrire **un seul script Bash** capable de :
+1. **Archiver** le dossier spécifique `data` (compression `.tar.gz` avec horodatage).
+2. **Restaurer** une archive choisie vers un dossier cible (de manière interactive).
 
-1. **Sauvegarde et archivage** — compression d'un répertoire source dans une archive horodatée au format `.tar.gz`.
-2. **Restauration interactive** — décompression d'une archive choisie par l'utilisateur vers un dossier cible.
-
-L'ensemble des opérations doit être journalisé pour garantir la traçabilité et faciliter le débogage.
+Aucune journalisation externe ni tâche planifiée ne sont requises.
 
 ---
 
@@ -15,84 +14,56 @@ L'ensemble des opérations doit être journalisé pour garantir la traçabilité
 
 | # | Critère | Détail | Points |
 |---|---------|--------|--------|
-| 1 | Sauvegarde avec gestion des erreurs | Vérification de l'existence du dossier source ; arrêt immédiat avec code d'erreur si absent ; journalisation des événements | 1 |
-| 2 | Restauration interactive | Saisie du chemin de l'archive et du dossier cible ; validation de la présence du fichier archive ; création automatique du dossier cible ou demande de confirmation s'il contient déjà des données | 1 |
-| 3 | Journalisation de sauvegarde | Heure exacte du traitement ; lien absolu vers le dossier archivé | 1 |
-| 4 | Journalisation de restauration | Lien absolu vers le dossier restauré ; statut final de l'opération (succès ou échec détaillé) | 1 |
-| 5 | Horodatage et automatisation | Nommage standardisé `sauvegarde_AAAA-MM-JJ_HH-MM.tar.gz` ; planification via une tâche Cron | 1 |
+| 1 | Archive du dossier `data` | Compression en `.tar.gz` avec nom horodaté `sauvegarde_data_AAAA-MM-JJ_HH-MM.tar.gz` | 1 |
+| 2 | Gestion des erreurs | Vérification que le dossier `data` existe avant archivage ; arrêt avec code d'erreur sinon | 1 |
+| 3 | Restauration interactive | Saisie du chemin de l'archive et du dossier cible ; vérification que l'archive existe | 1 |
+| 4 | Protection du dossier cible | Création automatique si absent ; confirmation (`o/n`) s'il contient déjà des données | 1 |
+| 5 | Rapport de fin | Message clair indiquant succès ou échec détaillé de l'opération | 1 |
 
 ---
 
 ## 3. Spécifications fonctionnelles
 
-### Processus de sauvegarde et d'archivage
-- Définir des **variables fixes** pour le répertoire source et le répertoire de stockage des archives.
-- Utiliser le format compressé **Tarball (`.tar.gz`)**.
-- Isoler le flux de sortie pour capturer à la fois `stdout` et `stderr` dans le fichier de log.
-- Générer un nom d'archive basé sur l'horodatage pour éviter tout écrasement accidentel.
+### Archivage (`mode sauvegarde`)
+- Le dossier à archiver est fixé : **`data`** (chemin relatif ou absolu défini en début de script).
+- L'archive est nommée `sauvegarde_data_AAAA-MM-JJ_HH-MM.tar.gz`.
+- Elle est placée dans un répertoire de stockage défini (par exemple `./archives` ou un chemin absolu).
 
-### Processus de restauration interactive
-- Interface en ligne de commande avec invites textuelles guidant l'opérateur.
-- Vérifier la présence physique du fichier archive avant extraction.
-- Gérer intelligemment le dossier de destination :
-  - Création automatique s'il est absent.
-  - Message d'alerte et demande de confirmation explicite (`o/n`) s'il contient déjà des données.
-- Afficher un rapport de fin clair (succès ou type d'échec).
+### Restauration (`mode restauration`)
+- L'utilisateur saisit :
+  1. le chemin de l'archive à restaurer,
+  2. le dossier cible de restauration.
+- Le script vérifie que l'archive existe physiquement.
+- Si le dossier cible est absent, il est créé automatiquement.
+- S'il contient déjà des données, une confirmation `o/n` est demandée avant écrasement.
 
----
-
-## 4. Spécifications techniques et contraintes
-
-- **Environnement** : interpréteur Bash standard sous Linux (compatibilité Debian, Ubuntu, RHEL).
-- **Chemins** : utilisation obligatoire de chemins absolus pour éviter les problèmes de contexte d'exécution.
-- **Droits** : exécuter avec les privilèges nécessaires pour lire le répertoire d'origine et écrire dans les répertoires de destination et de logs.
+### Rapport de fin
+À la fin de chaque opération, le script affiche clairement :
+- `Succès` avec le chemin de l'archive ou du dossier restauré, ou
+- `Échec` avec le motif détaillé.
 
 ---
 
-## 5. Format des journaux
+## 4. Spécifications techniques
 
-### Journal de sauvegarde (`sauvegarde.log`)
-
-```
-=== DÉBUT DU TRAITEMENT : [Date complète] ===
-Heure d'archivage : [HH:MM:SS]
-Lien du dossier à archiver : [Chemin absolu source]
-Création de l'archive dans : [Chemin de l'archive horodatée]
-STATUT : Sauvegarde réussie.
-=== FIN DU TRAITEMENT (SUCCÈS) : [Date complète] ===
-----------------------------------------
-```
-
-### Journal de restauration (`restauration.log`)
-
-```
-=== DÉBUT DE RESTAURATION : [Date complète] ===
-Archive sélectionnée : [Chemin de l'archive source]
-Lien vers le dossier restauré : [Chemin du dossier cible]
-Extraction des fichiers vers [Chemin du dossier cible]...
-STATUT : Restauration accomplie avec succès.
-=== FIN DE RESTAURATION (SUCCÈS) : [Date complète] ===
-----------------------------------------
-```
+- **Interpréteur** : Bash standard sous Linux.
+- **Dossier cible** : le dossier `data` est spécifique et défini en variable au début du script.
+- **Droits** : le script doit pouvoir lire `data` et écrire dans le répertoire de stockage / dossier cible.
+- **Livrable** : un seul script Bash exécutable (ex: `data_backup.sh`).
 
 ---
 
-## 6. Planification automatisée (Cron)
+## 5. Exemple d'utilisation
 
-Le processus de sauvegarde doit pouvoir être programmé pour s'exécuter de façon autonome, par exemple chaque jour à minuit :
+```bash
+# Rend le script exécutable
+chmod +x data_backup.sh
 
-```cron
-0 0 * * * /chemin/absolu/EXO-02/sauvegarde.sh
+# Archivage du dossier data
+./data_backup.sh save
+
+# Restauration interactive
+./data_backup.sh restore
 ```
 
----
-
-## 7. Livrables attendus
-
-| Fichier | Rôle |
-|---------|------|
-| `EXO-02/sauvegarde.sh` | Script de sauvegarde et d'archivage |
-| `EXO-02/restauration.sh` | Script de restauration interactive |
-| `EXO-02/exo-02.md` | Cet énoncé / cahier des charges |
-
-Les scripts doivent être rendus exécutables (`chmod +x`).
+Lors de la restauration, le script demande le chemin de l'archive et le dossier cible, puis confirme avant d'écraser des données existantes.
