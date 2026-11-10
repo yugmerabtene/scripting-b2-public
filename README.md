@@ -10,17 +10,6 @@
 
 ---
 
-## 👤 Auteur
-
-**Youghourta Merabtène** — Fullstack Dev / SysAdmin / CyberSec, formateur depuis la France.
-
-- [🔗 Profil GitHub](https://github.com/yugmerabtene)
-- [🌐 Site personnel](http://yug.be)
-- [🐦 Twitter](https://twitter.com/yugmerabtene)
-- ✉️ yug.merabtene@gmail.com
-
----
-
 ## 📚 Sommaire — Navigation rapide
 
 | Jour | Thème | Environnement | Fichier |
