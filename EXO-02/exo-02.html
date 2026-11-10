@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EXO-02 — Système de Sauvegarde et de Restauration</title>
+<style>
+  body { font-family: 'DejaVu Sans', sans-serif; line-height: 1.6; color: #222; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+  h1 { font-size: 24px; border-bottom: 2px solid #2c3e50; padding-bottom: 10px; color: #2c3e50; }
+  h2 { font-size: 20px; color: #2c3e50; margin-top: 30px; }
+  h3 { font-size: 16px; color: #34495e; margin-top: 20px; }
+  p { margin: 10px 0; }
+  ul, ol { margin: 10px 0 10px 25px; }
+  li { margin-bottom: 6px; }
+  table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+  th, td { border: 1px solid #bdc3c7; padding: 8px 12px; text-align: left; }
+  th { background: #ecf0f1; font-weight: bold; }
+  code { background: #f4f6f7; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 13px; }
+  pre { background: #f4f6f7; padding: 12px; border-radius: 4px; overflow-x: auto; font-family: monospace; font-size: 13px; }
+  .badge { display: inline-block; background: #27ae60; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 12px; }
+  .note { background: #fdf2e9; border-left: 4px solid #e67e22; padding: 10px; margin: 15px 0; }
+  .section { page-break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<h1>EXO-02 — Système de Sauvegarde et de Restauration</h1>
+
+<h2>1. Présentation</h2>
+<p>Ce projet consiste à concevoir une solution fiable de gestion des données destinée à des étudiants. Elle repose sur deux processus distincts :</p>
+<ul>
+  <li><strong>Sauvegarde et archivage</strong> — compression d'un répertoire source dans une archive horodatée au format <code>.tar.gz</code>.</li>
+  <li><strong>Restauration interactive</strong> — décompression d'une archive choisie par l'utilisateur vers un dossier cible.</li>
+</ul>
+<p>L'ensemble des opérations doit être journalisé pour garantir la traçabilité et faciliter le débogage.</p>
+
+<h2>2. Critères d'évaluation (sur 5 points)</h2>
+<table>
+  <thead>
+    <tr><th>#</th><th>Critère</th><th>Détail</th><th>Points</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Sauvegarde avec gestion des erreurs</td><td>Vérification de l'existence du dossier source ; arrêt immédiat avec code d'erreur si absent ; journalisation des événements.</td><td><span class="badge">1 pt</span></td></tr>
+    <tr><td>2</td><td>Restauration interactive</td><td>Saisie du chemin de l'archive et du dossier cible ; validation de la présence du fichier archive ; création automatique du dossier cible ou demande de confirmation s'il contient déjà des données.</td><td><span class="badge">1 pt</span></td></tr>
+    <tr><td>3</td><td>Journalisation de sauvegarde</td><td>Heure exacte du traitement ; lien absolu vers le dossier archivé.</td><td><span class="badge">1 pt</span></td></tr>
+    <tr><td>4</td><td>Journalisation de restauration</td><td>Lien absolu vers le dossier restauré ; statut final de l'opération (succès ou échec détaillé).</td><td><span class="badge">1 pt</span></td></tr>
+    <tr><td>5</td><td>Horodatage et automatisation</td><td>Nommage standardisé <code>sauvegarde_AAAA-MM-JJ_HH-MM.tar.gz</code> ; planification via une tâche Cron.</td><td><span class="badge">1 pt</span></td></tr>
+  </tbody>
+</table>
+
+<h2>3. Spécifications fonctionnelles</h2>
+<h3>Processus de sauvegarde et d'archivage</h3>
+<ul>
+  <li>Définir des <strong>variables fixes</strong> pour le répertoire source et le répertoire de stockage des archives.</li>
+  <li>Utiliser le format compressé <strong>Tarball (`.tar.gz`)</strong>.</li>
+  <li>Isoler le flux de sortie pour capturer à la fois <code>stdout</code> et <code>stderr</code> dans le fichier de log.</li>
+  <li>Générer un nom d'archive basé sur l'horodatage pour éviter tout écrasement accidentel.</li>
+</ul>
+<h3>Processus de restauration interactive</h3>
+<ul>
+  <li>Interface en ligne de commande avec invites textuelles guidant l'opérateur.</li>
+  <li>Vérifier la présence physique du fichier archive avant extraction.</li>
+  <li>Gérer intelligemment le dossier de destination :
+    <ul>
+      <li>Création automatique s'il est absent.</li>
+      <li>Message d'alerte et demande de confirmation explicite (<code>o/n</code>) s'il contient déjà des données.</li>
+    </ul>
+  </li>
+  <li>Afficher un rapport de fin clair (succès ou type d'échec).</li>
+</ul>
+
+<h2>4. Spécifications techniques et contraintes</h2>
+<ul>
+  <li><strong>Environnement</strong> : interpréteur Bash standard sous Linux (compatibilité Debian, Ubuntu, RHEL).</li>
+  <li><strong>Chemins</strong> : utilisation obligatoire de chemins absolus pour éviter les problèmes de contexte d'exécution.</li>
+  <li><strong>Droits</strong> : exécuter avec les privilèges nécessaires pour lire le répertoire d'origine et écrire dans les répertoires de destination et de logs.</li>
+</ul>
+
+<h2>5. Format des journaux</h2>
+<h3>Journal de sauvegarde (<code>sauvegarde.log</code>)</h3>
+<pre>=== DÉBUT DU TRAITEMENT : [Date complète] ===
+Heure d'archivage : [HH:MM:SS]
+Lien du dossier à archiver : [Chemin absolu source]
+Création de l'archive dans : [Chemin de l'archive horodatée]
+STATUT : Sauvegarde réussie.
+=== FIN DU TRAITEMENT (SUCCÈS) : [Date complète] ===
+----------------------------------------</pre>
+
+<h3>Journal de restauration (<code>restauration.log</code>)</h3>
+<pre>=== DÉBUT DE RESTAURATION : [Date complète] ===
+Archive sélectionnée : [Chemin de l'archive source]
+Lien vers le dossier restauré : [Chemin du dossier cible]
+Extraction des fichiers vers [Chemin du dossier cible]...
+STATUT : Restauration accomplie avec succès.
+=== FIN DE RESTAURATION (SUCCÈS) : [Date complète] ===
+----------------------------------------</pre>
+
+<h2>6. Planification automatisée (Cron)</h2>
+<p>Le processus de sauvegarde doit pouvoir être programmé pour s'exécuter de façon autonome, par exemple chaque jour à minuit :</p>
+<pre>0 0 * * * /chemin/absolu/EXO-02/sauvegarde.sh</pre>
+
+<h2>7. Livrables attendus</h2>
+<table>
+  <thead>
+    <tr><th>Fichier</th><th>Rôle</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>EXO-02/sauvegarde.sh</code></td><td>Script de sauvegarde et d'archivage</td></tr>
+    <tr><td><code>EXO-02/restauration.sh</code></td><td>Script de restauration interactive</td></tr>
+    <tr><td><code>EXO-02/exo-02.md</code></td><td>Énoncé / cahier des charges</td></tr>
+  </tbody>
+</table>
+<p class="note">Les scripts doivent être rendus exécutables (<code>chmod +x</code>).</p>
+
+</body>
+</html>
